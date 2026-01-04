@@ -76,6 +76,116 @@ devknife url --file input.txt
 devknife url --help
 ```
 
+### 데이터 형식 처리 유틸리티
+
+#### JSON 포맷팅
+```bash
+# JSON 포맷팅 (압축된 JSON을 읽기 쉽게)
+devknife json '{"name":"John","age":30,"city":"Seoul"}'
+# 출력:
+# {
+#   "name": "John",
+#   "age": 30,
+#   "city": "Seoul"
+# }
+
+# 사용자 정의 들여쓰기
+devknife json --indent 4 '{"name":"John","age":30}'
+
+# JSON 복구 모드 (손상된 JSON 자동 수정)
+devknife json --recover "{'name':'John','age':30,}"
+# 출력: 유효한 JSON으로 변환됨
+
+# 파이프를 통한 입력
+echo '{"compressed":"json"}' | devknife json
+
+# 파일에서 읽기
+devknife json --file data.json
+
+# 도움말
+devknife json --help
+```
+
+#### JSON을 YAML로 변환
+```bash
+# JSON을 YAML로 변환
+devknife json2yaml '{"name":"John","age":30,"hobbies":["reading","coding"]}'
+# 출력:
+# name: John
+# age: 30
+# hobbies:
+# - reading
+# - coding
+
+# 중첩된 객체 변환
+devknife json2yaml '{"person":{"name":"John","details":{"age":30,"city":"Seoul"}}}'
+
+# 파이프를 통한 입력
+echo '{"database":{"host":"localhost","port":5432}}' | devknife json2yaml
+
+# 파일에서 읽기
+devknife json2yaml --file config.json
+
+# 도움말
+devknife json2yaml --help
+```
+
+#### XML 포맷팅
+```bash
+# XML 포맷팅 (압축된 XML을 읽기 쉽게)
+devknife xml '<root><person><name>John</name><age>30</age></person></root>'
+# 출력:
+# <?xml version="1.0" ?>
+# <root>
+#   <person>
+#     <name>John</name>
+#     <age>30</age>
+#   </person>
+# </root>
+
+# 사용자 정의 들여쓰기
+devknife xml --indent 4 '<root><item>value</item></root>'
+
+# 파이프를 통한 입력
+echo '<config><database><host>localhost</host></database></config>' | devknife xml
+
+# 파일에서 읽기
+devknife xml --file config.xml
+
+# 도움말
+devknife xml --help
+```
+
+#### JSON을 Python 클래스로 변환
+```bash
+# JSON 구조를 Python 데이터클래스로 변환
+devknife json2py '{"name":"John","age":30,"active":true}' --class-name Person
+# 출력:
+# from dataclasses import dataclass
+# from typing import Any, List, Dict, Optional
+# 
+# @dataclass
+# class Person:
+#     name: str
+#     age: int
+#     active: bool
+
+# 복잡한 중첩 구조
+devknife json2py '{"id":1,"user":{"name":"John","hobbies":["reading","coding"]}}' --class-name UserData
+
+# 기본 클래스명 사용
+devknife json2py '{"test":"value"}'  # GeneratedClass로 생성됨
+
+# 파이프를 통한 입력
+echo '{"id":1,"title":"Task","completed":false}' | devknife json2py --class-name Task
+
+# 파일에서 읽기
+devknife json2py --file schema.json --class-name MyClass
+
+# 도움말
+devknife json2py --help
+```
+
 ### 💡 사용 팁
 
 #### 따옴표 사용법
@@ -112,7 +222,7 @@ devknife
 ### 현재 구현된 기능
 - ✅ Base64 인코딩/디코딩
 - ✅ URL 인코딩/디코딩
-- 🚧 JSON/XML/YAML 처리 (개발 중)
+- ✅ JSON/XML/YAML 처리
 - 🚧 CSV/TSV 변환 (개발 중)
 - 🚧 개발자 도구 (개발 중)
 - 🚧 수학적 변환 (개발 중)
@@ -157,6 +267,75 @@ Hello World! How are you?
 # 복잡한 쿼리 스트링 처리
 $ devknife url 'name=John Doe&email=john@example.com&message=Hello there!'
 name%3DJohn%20Doe%26email%3Djohn%40example.com%26message%3DHello%20there%21
+```
+
+### JSON/XML/YAML 처리 예시
+```bash
+# 압축된 JSON을 읽기 쉽게 포맷팅
+$ devknife json '{"name":"김철수","age":25,"skills":["Python","JavaScript","Go"]}'
+{
+  "name": "김철수",
+  "age": 25,
+  "skills": [
+    "Python",
+    "JavaScript",
+    "Go"
+  ]
+}
+
+# 손상된 JSON 복구
+$ devknife json --recover "{'name':'김철수','age':25,}"
+{
+  "name": "김철수",
+  "age": 25
+}
+
+# JSON을 YAML로 변환
+$ devknife json2yaml '{"database":{"host":"localhost","port":5432,"credentials":{"username":"admin","password":"secret"}}}'
+database:
+  host: localhost
+  port: 5432
+  credentials:
+    username: admin
+    password: secret
+
+# XML 포맷팅
+$ devknife xml '<config><server><host>localhost</host><port>8080</port></server></config>'
+<?xml version="1.0" ?>
+<config>
+  <server>
+    <host>localhost</host>
+    <port>8080</port>
+  </server>
+</config>
+
+# JSON을 Python 클래스로 변환
+$ devknife json2py '{"user_id":123,"profile":{"name":"김철수","email":"kim@example.com","preferences":{"theme":"dark","language":"ko"}}}' --class-name UserProfile
+from dataclasses import dataclass
+from typing import Any, List, Dict, Optional
+
+@dataclass
+class UserProfile:
+    user_id: int
+    profile: Dict[str, Any]
+```
+
+### 실무 활용 예시
+```bash
+# API 응답 JSON 포맷팅
+$ curl -s https://api.example.com/users/1 | devknife json
+
+# 설정 파일 JSON을 YAML로 변환
+$ devknife json2yaml --file config.json > config.yaml
+
+# 로그 파일에서 JSON 추출 후 포맷팅
+$ grep '{"timestamp"' app.log | devknife json
+
+# API 스키마를 Python 클래스로 변환
+$ devknife json2py --file api_schema.json --class-name ApiResponse > models.py
+
+# XML 설정 파일 정리
+$ devknife xml --file web.config --indent 4 > web_formatted.config
 ```
 
 ### 파이프라인 활용 예시
@@ -204,6 +383,41 @@ $ devknife base64 --file large_file.txt
 $ cat large_file.txt | devknife base64
 ```
 
+#### JSON 관련 문제
+```bash
+# 잘못된 JSON 형식
+$ devknife json '{"name":"John","age":30,}'
+오류: Invalid JSON format: Expecting property name enclosed in double quotes: line 1 column 25 (char 24). Use --recover flag to attempt automatic repair.
+
+# 복구 모드 사용
+$ devknife json --recover '{"name":"John","age":30,}'
+{
+  "name": "John",
+  "age": 30
+}
+
+# 단일 따옴표 JSON 복구
+$ devknife json --recover "{'name':'John','age':30}"
+{
+  "name": "John",
+  "age": 30
+}
+```
+
+#### XML 관련 문제
+```bash
+# 잘못된 XML 형식
+$ devknife xml '<root><unclosed>'
+오류: Invalid XML format: mismatched tag: line 1, column 15
+
+# 올바른 XML 사용
+$ devknife xml '<root><item>value</item></root>'
+<?xml version="1.0" ?>
+<root>
+  <item>value</item>
+</root>
+```
+
 ### 오류 메시지 해석
 
 #### Base64 디코딩 오류
@@ -212,9 +426,33 @@ $ devknife base64 --decode 'invalid base64!'
 오류: Invalid Base64 format. Base64 strings should only contain A-Z, a-z, 0-9, +, /, and = for padding.
 ```
 
+#### JSON 처리 오류
+```bash
+# 잘못된 JSON 형식
+$ devknife json '{"name":"John",}'
+오류: Invalid JSON format: Expecting property name enclosed in double quotes: line 1 column 15 (char 14). Use --recover flag to attempt automatic repair.
+
+# JSON to YAML 변환 오류
+$ devknife json2yaml '{"name":"John",}'
+오류: Invalid JSON input: Expecting property name enclosed in double quotes: line 1 column 15 (char 14)
+
+# JSON to Python 클래스 변환 오류
+$ devknife json2py '{"name":"John",}'
+오류: Invalid JSON input: Expecting property name enclosed in double quotes: line 1 column 15 (char 14)
+```
+
+#### XML 처리 오류
+```bash
+$ devknife xml '<root><unclosed>'
+오류: Invalid XML format: mismatched tag: line 1, column 15
+```
+
 #### 입력 없음 오류
 ```bash
 $ devknife base64
+오류: 입력 텍스트가 필요합니다. --help를 참조하세요.
+
+$ devknife json
 오류: 입력 텍스트가 필요합니다. --help를 참조하세요.
 ```
 
