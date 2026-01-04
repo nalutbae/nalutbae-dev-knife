@@ -19,6 +19,8 @@ Requires-Dist: click>=8.0.0
 Requires-Dist: textual>=0.40.0
 Requires-Dist: hypothesis>=6.0.0
 Requires-Dist: pytest>=7.0.0
+Requires-Dist: chardet>=5.0.0
+Requires-Dist: PyYAML>=6.0.0
 Provides-Extra: dev
 Requires-Dist: pytest-cov; extra == "dev"
 Requires-Dist: black; extra == "dev"
