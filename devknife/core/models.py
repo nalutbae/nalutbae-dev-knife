@@ -137,7 +137,6 @@ class ProcessingResult:
 
 
 @dataclass
-@dataclass
 class Config:
     """
     Configuration settings for the DevKnife system.
@@ -147,6 +146,12 @@ class Config:
     output_format: str = 'auto'
     tui_theme: str = 'default'
     default_interface: str = 'tui'  # 'cli' or 'tui'
+    
+    # Performance settings
+    streaming_threshold: int = 10 * 1024 * 1024  # 10MB - files larger than this use streaming
+    chunk_size: int = 8192  # 8KB chunks for streaming
+    max_memory_usage: int = 50 * 1024 * 1024  # 50MB max memory usage
+    progress_update_interval: float = 0.1  # Update progress every 100ms
     
     def __post_init__(self):
         """Validate configuration after initialization."""
@@ -160,6 +165,14 @@ class Config:
             raise ValueError("TUI theme cannot be empty")
         if self.default_interface not in ['cli', 'tui']:
             raise ValueError("Default interface must be 'cli' or 'tui'")
+        if self.streaming_threshold <= 0:
+            raise ValueError("Streaming threshold must be positive")
+        if self.chunk_size <= 0:
+            raise ValueError("Chunk size must be positive")
+        if self.max_memory_usage <= 0:
+            raise ValueError("Max memory usage must be positive")
+        if self.progress_update_interval <= 0:
+            raise ValueError("Progress update interval must be positive")
     
     def validate_file_size(self, size: int) -> bool:
         """
@@ -172,3 +185,15 @@ class Config:
             True if size is within limit, False otherwise
         """
         return 0 <= size <= self.max_file_size
+    
+    def should_use_streaming(self, size: int) -> bool:
+        """
+        Check if streaming should be used for a given data size.
+        
+        Args:
+            size: Data size in bytes
+            
+        Returns:
+            True if streaming should be used
+        """
+        return size > self.streaming_threshold

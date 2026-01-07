@@ -7,17 +7,118 @@ from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import (
     Header, Footer, Static, Button, Input, TextArea, 
-    SelectionList, Label, Collapsible, Tabs, TabPane
+    SelectionList, Label, Collapsible, Tabs, TabPane, ProgressBar
 )
 from textual.screen import Screen
 from textual.binding import Binding
 from textual.message import Message
 from textual import events
+import asyncio
+import threading
 
 from ..core.router import get_global_router, get_global_registry
 from ..core.models import InputData, InputSource, ProcessingResult
 from ..core.config_manager import get_global_config_manager, get_global_config
 from ..core.error_handling import get_tui_error_handler
+from ..core.performance import progress_context, ProgressType
+
+
+class ProgressScreen(Screen):
+    """Screen for showing progress of long-running operations."""
+    
+    BINDINGS = [
+        Binding("escape", "cancel", "Cancel"),
+        Binding("q", "cancel", "Cancel"),
+    ]
+    
+    def __init__(self, operation_name: str, **kwargs):
+        super().__init__(**kwargs)
+        self.operation_name = operation_name
+        self.cancelled = False
+        self.result = None
+        self.error = None
+    
+    def compose(self) -> ComposeResult:
+        """Create the progress display interface."""
+        yield Header()
+        
+        with Container(id="progress-container"):
+            yield Static(f"Processing: {self.operation_name}", id="progress-title")
+            
+            yield Static("⏳ Starting operation...", id="progress-status")
+            yield ProgressBar(id="progress-bar", show_eta=True)
+            
+            yield Static("", id="progress-details")
+            
+            with Horizontal(id="progress-actions"):
+                yield Button("Cancel", variant="error", id="cancel-btn")
+        
+        yield Footer()
+    
+    def on_mount(self) -> None:
+        """Initialize progress display."""
+        self.update_status("Initializing...")
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press events."""
+        if event.button.id == "cancel-btn":
+            self.action_cancel()
+    
+    def update_status(self, message: str, progress: Optional[float] = None, details: str = "") -> None:
+        """
+        Update progress display.
+        
+        Args:
+            message: Status message
+            progress: Progress percentage (0-100)
+            details: Additional details
+        """
+        try:
+            status_widget = self.query_one("#progress-status", Static)
+            status_widget.update(f"⏳ {message}")
+            
+            if progress is not None:
+                progress_bar = self.query_one("#progress-bar", ProgressBar)
+                progress_bar.progress = progress
+            
+            if details:
+                details_widget = self.query_one("#progress-details", Static)
+                details_widget.update(details)
+        except Exception:
+            pass  # Ignore errors if widgets not found
+    
+    def set_result(self, result: ProcessingResult) -> None:
+        """Set the operation result."""
+        self.result = result
+        if result.success:
+            self.update_status("✓ Operation completed successfully", 100)
+        else:
+            self.update_status("✗ Operation failed", 100)
+        
+        # Auto-close after a short delay
+        self.set_timer(1.0, self._auto_close)
+    
+    def set_error(self, error: Exception) -> None:
+        """Set an error result."""
+        self.error = error
+        self.update_status(f"✗ Error: {str(error)}", 100)
+        
+        # Auto-close after a short delay
+        self.set_timer(2.0, self._auto_close)
+    
+    def _auto_close(self) -> None:
+        """Auto-close the progress screen."""
+        if not self.cancelled:
+            self.app.pop_screen()
+    
+    def action_cancel(self) -> None:
+        """Cancel the operation."""
+        self.cancelled = True
+        self.update_status("Cancelling operation...", None, "Please wait...")
+        
+        # In a real implementation, you would signal the operation to stop
+        # For now, just close the screen
+        self.set_timer(0.5, lambda: self.app.pop_screen())
 
 
 class UtilitySelectionScreen(Screen):
@@ -386,30 +487,78 @@ class UtilityFormScreen(Screen):
         options = self._collect_options()
         error_handler = get_tui_error_handler()
         
-        # Show processing indicator with progress
-        self.notify("Processing...", timeout=2)
+        # Check if this is likely to be a long-running operation
+        is_large_file = input_data.metadata.get("file_size", 0) > 1024 * 1024  # > 1MB
+        is_streaming = input_data.metadata.get("streaming", False)
         
-        # Add a progress indicator for better UX
-        progress_container = Container(id="progress-container")
-        progress_container.mount(Static("⏳ Processing your request...", id="progress-text"))
-        
-        try:
-            # Execute the command
-            result = self.router.route_command(self.command_name, input_data, options)
+        if is_large_file or is_streaming:
+            # Use progress screen for large operations
+            self._run_with_progress(input_data, options)
+        else:
+            # Run normally for small operations
+            self.notify("Processing...", timeout=2)
             
-            # Show results
-            self.app.push_screen(ResultScreen(self.command_name, result))
-        except Exception as e:
-            error_info = error_handler.handle_for_notification(e)
-            self.notify(error_info['message'], severity="error")
-            # Still show result screen with error
-            from ..core.models import ProcessingResult
-            error_result = ProcessingResult(
-                success=False,
-                output=None,
-                error_message=error_info['message']
-            )
-            self.app.push_screen(ResultScreen(self.command_name, error_result))
+            try:
+                # Execute the command
+                result = self.router.route_command(self.command_name, input_data, options)
+                
+                # Show results
+                self.app.push_screen(ResultScreen(self.command_name, result))
+            except Exception as e:
+                error_info = error_handler.handle_for_notification(e)
+                self.notify(error_info['message'], severity="error")
+                # Still show result screen with error
+                from ..core.models import ProcessingResult
+                error_result = ProcessingResult(
+                    success=False,
+                    output=None,
+                    error_message=error_info['message']
+                )
+                self.app.push_screen(ResultScreen(self.command_name, error_result))
+    
+    def _run_with_progress(self, input_data: InputData, options: Dict[str, Any]) -> None:
+        """
+        Run utility with progress indication for long operations.
+        
+        Args:
+            input_data: Input data to process
+            options: Processing options
+        """
+        progress_screen = ProgressScreen(f"{self.command_name} operation")
+        self.app.push_screen(progress_screen)
+        
+        def run_operation():
+            """Run the operation in a separate thread."""
+            try:
+                # Update progress
+                progress_screen.update_status("Processing data...", 25)
+                
+                # Execute the command
+                result = self.router.route_command(self.command_name, input_data, options)
+                
+                progress_screen.update_status("Finalizing results...", 90)
+                
+                # Set the result
+                progress_screen.set_result(result)
+                
+                # Schedule showing results screen
+                self.app.call_later(lambda: self.app.push_screen(ResultScreen(self.command_name, result)))
+                
+            except Exception as e:
+                progress_screen.set_error(e)
+                
+                # Schedule showing error result
+                from ..core.models import ProcessingResult
+                error_result = ProcessingResult(
+                    success=False,
+                    output=None,
+                    error_message=str(e)
+                )
+                self.app.call_later(lambda: self.app.push_screen(ResultScreen(self.command_name, error_result)))
+        
+        # Start operation in background thread
+        thread = threading.Thread(target=run_operation, daemon=True)
+        thread.start()
     
     def action_back(self) -> None:
         """Go back to utility selection."""

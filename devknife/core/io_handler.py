@@ -9,10 +9,11 @@ import os
 import sys
 import chardet
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, TextIO
+from typing import Any, Dict, List, Optional, Union, TextIO, Iterator
 from enum import Enum
 
 from .models import InputData, InputSource, ProcessingResult, Config
+from .performance import get_global_streaming_handler, get_global_memory_optimizer, progress_context, ProgressType
 
 
 class OutputFormat(Enum):
@@ -103,13 +104,13 @@ class InputHandler:
     
     def read_from_file(self, file_path: Union[str, Path]) -> InputData:
         """
-        Read input data from a file.
+        Read input data from a file with streaming optimization for large files.
         
         Args:
             file_path: Path to the file to read
             
         Returns:
-            InputData object containing the file content
+            InputData object containing the file content or streaming metadata
             
         Raises:
             FileNotFoundError: If file doesn't exist
@@ -132,27 +133,55 @@ class InputHandler:
         if file_size == 0:
             raise ValueError(f"File is empty: {file_path}")
         
+        # Get memory optimizer to determine if streaming should be used
+        memory_optimizer = get_global_memory_optimizer()
+        should_stream = memory_optimizer.should_use_streaming(file_size)
+        
         try:
-            # Read file in binary mode first for encoding detection
-            with open(path, 'rb') as f:
-                raw_content = f.read()
-            
-            # Detect encoding
-            encoding = self.detect_encoding(raw_content)
-            
-            # Decode content
-            content = raw_content.decode(encoding)
-            
-            return InputData(
-                content=content,
-                source=InputSource.FILE,
-                encoding=encoding,
-                metadata={
-                    "file_path": str(path.absolute()),
-                    "file_size": file_size,
-                    "detected_encoding": encoding
-                }
-            )
+            if should_stream:
+                # For large files, use streaming approach
+                # Store file path and metadata instead of loading content
+                return InputData(
+                    content=str(path),  # Store path as content for streaming
+                    source=InputSource.FILE,
+                    encoding=self.config.default_encoding,
+                    metadata={
+                        "file_path": str(path.absolute()),
+                        "file_size": file_size,
+                        "streaming": True,
+                        "requires_streaming": True
+                    }
+                )
+            else:
+                # For smaller files, read normally with progress indication
+                with progress_context(ProgressType.SPINNER, f"Reading {path.name}") as progress:
+                    # Read file in binary mode first for encoding detection
+                    with open(path, 'rb') as f:
+                        raw_content = f.read()
+                    
+                    progress.update(message="Detecting encoding...")
+                    
+                    # Detect encoding
+                    encoding = self.detect_encoding(raw_content)
+                    
+                    progress.update(message="Decoding content...")
+                    
+                    # Decode content
+                    content = raw_content.decode(encoding)
+                    
+                    progress.finish("File loaded successfully")
+                
+                return InputData(
+                    content=content,
+                    source=InputSource.FILE,
+                    encoding=encoding,
+                    metadata={
+                        "file_path": str(path.absolute()),
+                        "file_size": file_size,
+                        "detected_encoding": encoding,
+                        "streaming": False
+                    }
+                )
         except PermissionError:
             raise PermissionError(f"Permission denied reading file: {file_path}")
         except UnicodeDecodeError as e:
@@ -205,6 +234,37 @@ class InputHandler:
             return True
         except (UnicodeDecodeError, UnicodeEncodeError, LookupError):
             return False
+    
+    def get_streaming_content(self, input_data: InputData) -> Union[str, Iterator[str]]:
+        """
+        Get content from InputData, handling streaming if needed.
+        
+        Args:
+            input_data: InputData object that may contain streaming metadata
+            
+        Returns:
+            Content string for small data, or iterator for streaming data
+        """
+        if input_data.metadata.get("streaming", False):
+            # This is streaming data, return iterator
+            streaming_handler = get_global_streaming_handler()
+            file_path = input_data.metadata.get("file_path", input_data.content)
+            return streaming_handler.stream_file_lines(file_path, input_data.encoding)
+        else:
+            # Regular data, return as string
+            return input_data.as_string()
+    
+    def is_streaming_data(self, input_data: InputData) -> bool:
+        """
+        Check if InputData requires streaming processing.
+        
+        Args:
+            input_data: InputData object to check
+            
+        Returns:
+            True if data should be processed in streaming mode
+        """
+        return input_data.metadata.get("streaming", False)
 
 
 class OutputFormatter:

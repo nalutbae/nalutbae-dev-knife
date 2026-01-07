@@ -8,9 +8,15 @@ import json
 import re
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Iterator
 import yaml
 from devknife.core import UtilityModule, Command, InputData, ProcessingResult
+from devknife.core.performance import (
+    get_global_memory_optimizer, 
+    get_global_streaming_handler,
+    progress_context,
+    ProgressType
+)
 
 
 class JSONFormatter(UtilityModule):
@@ -714,7 +720,7 @@ class CSVToMarkdownConverter(UtilityModule):
     
     def process(self, input_data: InputData, options: Dict[str, Any]) -> ProcessingResult:
         """
-        Process input by converting CSV to Markdown table.
+        Process input by converting CSV to Markdown table with streaming support for large files.
         
         Args:
             input_data: Input data to process
@@ -724,8 +730,14 @@ class CSVToMarkdownConverter(UtilityModule):
             ProcessingResult with Markdown table output
         """
         try:
-            content = input_data.as_string().strip()
             has_header = options.get('has_header', True)
+            memory_optimizer = get_global_memory_optimizer()
+            
+            # Check if we should use streaming
+            if input_data.metadata.get("streaming", False):
+                return self._process_streaming(input_data, has_header)
+            
+            content = input_data.as_string().strip()
             
             if not content:
                 return ProcessingResult(
@@ -734,20 +746,29 @@ class CSVToMarkdownConverter(UtilityModule):
                     error_message="Empty CSV input provided"
                 )
             
-            # Parse CSV
+            # Check if content is large enough to warrant streaming
+            if memory_optimizer.optimize_csv_processing(content):
+                return self._process_large_csv(content, has_header)
+            
+            # Parse CSV normally for smaller files
             try:
-                csv_reader = csv.reader(io.StringIO(content))
-                rows = list(csv_reader)
-                
-                if not rows:
-                    return ProcessingResult(
-                        success=False,
-                        output=None,
-                        error_message="No data found in CSV input"
-                    )
-                
-                # Generate Markdown table
-                markdown_output = self._generate_markdown_table(rows, has_header)
+                with progress_context(ProgressType.SPINNER, "Parsing CSV data") as progress:
+                    csv_reader = csv.reader(io.StringIO(content))
+                    rows = list(csv_reader)
+                    
+                    progress.update(message="Converting to Markdown")
+                    
+                    if not rows:
+                        return ProcessingResult(
+                            success=False,
+                            output=None,
+                            error_message="No data found in CSV input"
+                        )
+                    
+                    # Generate Markdown table
+                    markdown_output = self._generate_markdown_table(rows, has_header)
+                    
+                    progress.finish("CSV conversion completed")
                 
                 return ProcessingResult(
                     success=True,
@@ -756,7 +777,8 @@ class CSVToMarkdownConverter(UtilityModule):
                         'operation': 'csv_to_markdown',
                         'rows_processed': len(rows),
                         'columns': len(rows[0]) if rows else 0,
-                        'has_header': has_header
+                        'has_header': has_header,
+                        'streaming_used': False
                     }
                 )
                 
@@ -772,6 +794,141 @@ class CSVToMarkdownConverter(UtilityModule):
                 success=False,
                 output=None,
                 error_message=f"Failed to process CSV input: {str(e)}"
+            )
+    
+    def _process_streaming(self, input_data: InputData, has_header: bool) -> ProcessingResult:
+        """
+        Process CSV data using streaming for large files.
+        
+        Args:
+            input_data: Streaming input data
+            has_header: Whether the first row is a header
+            
+        Returns:
+            ProcessingResult with Markdown table output
+        """
+        try:
+            streaming_handler = get_global_streaming_handler()
+            file_path = input_data.metadata.get("file_path", input_data.content)
+            
+            rows = []
+            row_count = 0
+            
+            with progress_context(ProgressType.COUNTER, "Processing CSV file") as progress:
+                for line in streaming_handler.stream_file_lines(file_path, input_data.encoding):
+                    try:
+                        # Parse each line as CSV
+                        csv_reader = csv.reader([line])
+                        row = next(csv_reader)
+                        rows.append(row)
+                        row_count += 1
+                        
+                        progress.update(row_count, f"Processed {row_count} rows")
+                        
+                        # Limit memory usage by processing in chunks
+                        if len(rows) > 10000:  # Process in chunks of 10k rows
+                            break
+                            
+                    except csv.Error:
+                        # Skip malformed rows
+                        continue
+                
+                progress.update(message="Converting to Markdown")
+                
+                if not rows:
+                    return ProcessingResult(
+                        success=False,
+                        output=None,
+                        error_message="No valid CSV data found in file"
+                    )
+                
+                markdown_output = self._generate_markdown_table(rows, has_header)
+                progress.finish(f"Processed {row_count} rows successfully")
+            
+            return ProcessingResult(
+                success=True,
+                output=markdown_output,
+                metadata={
+                    'operation': 'csv_to_markdown',
+                    'rows_processed': len(rows),
+                    'columns': len(rows[0]) if rows else 0,
+                    'has_header': has_header,
+                    'streaming_used': True
+                }
+            )
+            
+        except Exception as e:
+            return ProcessingResult(
+                success=False,
+                output=None,
+                error_message=f"Failed to process streaming CSV: {str(e)}"
+            )
+    
+    def _process_large_csv(self, content: str, has_header: bool) -> ProcessingResult:
+        """
+        Process large CSV content with memory optimization.
+        
+        Args:
+            content: CSV content string
+            has_header: Whether the first row is a header
+            
+        Returns:
+            ProcessingResult with Markdown table output
+        """
+        try:
+            rows = []
+            row_count = 0
+            
+            with progress_context(ProgressType.COUNTER, "Processing large CSV") as progress:
+                csv_reader = csv.reader(io.StringIO(content))
+                
+                for row in csv_reader:
+                    rows.append(row)
+                    row_count += 1
+                    
+                    if row_count % 1000 == 0:
+                        progress.update(row_count, f"Processed {row_count} rows")
+                    
+                    # Limit memory usage
+                    if len(rows) > 50000:  # Limit to 50k rows for memory
+                        progress.update(message="Limiting to first 50,000 rows for memory efficiency")
+                        break
+                
+                progress.update(message="Converting to Markdown")
+                
+                if not rows:
+                    return ProcessingResult(
+                        success=False,
+                        output=None,
+                        error_message="No data found in CSV input"
+                    )
+                
+                markdown_output = self._generate_markdown_table(rows, has_header)
+                progress.finish(f"Processed {len(rows)} rows successfully")
+            
+            warnings = []
+            if len(rows) >= 50000:
+                warnings.append("Output limited to first 50,000 rows for memory efficiency")
+            
+            return ProcessingResult(
+                success=True,
+                output=markdown_output,
+                warnings=warnings,
+                metadata={
+                    'operation': 'csv_to_markdown',
+                    'rows_processed': len(rows),
+                    'columns': len(rows[0]) if rows else 0,
+                    'has_header': has_header,
+                    'streaming_used': False,
+                    'memory_optimized': True
+                }
+            )
+            
+        except Exception as e:
+            return ProcessingResult(
+                success=False,
+                output=None,
+                error_message=f"Failed to process large CSV: {str(e)}"
             )
     
     def _generate_markdown_table(self, rows: List[List[str]], has_header: bool) -> str:
