@@ -41,7 +41,7 @@ dev = [
 ]
 
 [project.scripts]
-devknife = "devknife.cli.main:main"
+devknife = "devknife.main:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -13,6 +13,12 @@ from .router import (
     register_utility,
     discover_utilities
 )
+from .config_manager import ConfigManager, get_global_config_manager, get_global_config
+from .error_handling import (
+    UnifiedErrorHandler, CLIErrorHandler, TUIErrorHandler,
+    get_cli_error_handler, get_tui_error_handler,
+    ErrorSeverity, ErrorContext
+)
 
 __all__ = [
     "UtilityModule",
@@ -31,4 +37,16 @@ __all__ = [
     "get_global_router", 
     "register_utility",
     "discover_utilities",
+    # Configuration
+    "ConfigManager",
+    "get_global_config_manager",
+    "get_global_config",
+    # Error Handling
+    "UnifiedErrorHandler",
+    "CLIErrorHandler", 
+    "TUIErrorHandler",
+    "get_cli_error_handler",
+    "get_tui_error_handler",
+    "ErrorSeverity",
+    "ErrorContext",
 ]

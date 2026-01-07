@@ -7,6 +7,8 @@ import click
 from typing import Dict, Any
 from devknife.core import InputData, InputSource
 from devknife.core.router import get_global_registry, get_global_router
+from devknife.core.config_manager import get_global_config_manager, get_global_config
+from devknife.core.error_handling import get_cli_error_handler
 
 # Import all utility modules
 from devknife.utils.encoding_utility import Base64EncoderDecoder, URLEncoderDecoder
@@ -74,13 +76,16 @@ def get_input_data(text: str = None, file_path: str = None) -> InputData:
     Raises:
         click.ClickException: If no input is provided
     """
+    error_handler = get_cli_error_handler()
+    
     if file_path:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read().strip()
             return InputData(content=content, source=InputSource.FILE)
         except Exception as e:
-            raise click.ClickException(f"파일 읽기 오류: {str(e)}")
+            result = error_handler.handle_exception(e)
+            raise click.ClickException(error_handler.format_error_for_cli(result))
     elif text:
         return InputData(content=text, source=InputSource.ARGS)
     elif not sys.stdin.isatty():
@@ -89,7 +94,8 @@ def get_input_data(text: str = None, file_path: str = None) -> InputData:
             content = sys.stdin.read().strip()
             return InputData(content=content, source=InputSource.STDIN)
         except Exception as e:
-            raise click.ClickException(f"표준 입력 읽기 오류: {str(e)}")
+            result = error_handler.handle_exception(e)
+            raise click.ClickException(error_handler.format_error_for_cli(result))
     else:
         raise click.ClickException("입력이 필요합니다. 텍스트 인수, 파일 또는 파이프를 통한 입력을 제공하세요.")
 
@@ -103,16 +109,23 @@ def execute_command(command_name: str, input_data: InputData, options: Dict[str,
         input_data: Input data to process
         options: Command options
     """
-    router = get_global_router()
-    result = router.route_command(command_name, input_data, options)
+    error_handler = get_cli_error_handler()
     
-    if result.success:
-        click.echo(result.output)
-        if result.warnings:
-            for warning in result.warnings:
-                click.echo(f"경고: {warning}", err=True)
-    else:
-        click.echo(f"오류: {result.error_message}", err=True)
+    try:
+        router = get_global_router()
+        result = router.route_command(command_name, input_data, options)
+        
+        if result.success:
+            click.echo(result.output)
+            if result.warnings:
+                for warning in result.warnings:
+                    click.echo(f"경고: {warning}", err=True)
+        else:
+            click.echo(f"오류: {result.error_message}", err=True)
+            sys.exit(1)
+    except Exception as e:
+        result = error_handler.handle_exception(e)
+        click.echo(error_handler.format_error_for_cli(result), err=True)
         sys.exit(1)
 
 
@@ -130,20 +143,31 @@ def main(ctx, tui):
       devknife                 - TUI 인터페이스 시작
       devknife --tui           - TUI 인터페이스를 강제로 시작
     """
-    setup_utilities()
+    error_handler = get_cli_error_handler()
     
-    # If no command is provided or --tui flag is used, start TUI
-    if ctx.invoked_subcommand is None or tui:
-        try:
-            from ..tui import run_tui
-            run_tui()
-        except ImportError as e:
-            click.echo(f"TUI 인터페이스를 시작할 수 없습니다: {str(e)}")
-            click.echo("textual 패키지가 설치되어 있는지 확인하세요.")
-            click.echo("사용 가능한 명령어를 보려면 'devknife --help'를 실행하세요.")
-        except Exception as e:
-            click.echo(f"TUI 시작 중 오류가 발생했습니다: {str(e)}")
-            click.echo("사용 가능한 명령어를 보려면 'devknife --help'를 실행하세요.")
+    try:
+        setup_utilities()
+        
+        # If no command is provided or --tui flag is used, start TUI
+        if ctx.invoked_subcommand is None or tui:
+            try:
+                from ..tui import run_tui
+                run_tui()
+            except ImportError as e:
+                result = error_handler.handle_exception(
+                    ImportError(f"TUI 인터페이스를 시작할 수 없습니다: {str(e)}\n"
+                               "textual 패키지가 설치되어 있는지 확인하세요.")
+                )
+                click.echo(error_handler.format_error_for_cli(result), err=True)
+                click.echo("사용 가능한 명령어를 보려면 'devknife --help'를 실행하세요.")
+            except Exception as e:
+                result = error_handler.handle_exception(e)
+                click.echo(error_handler.format_error_for_cli(result), err=True)
+                click.echo("사용 가능한 명령어를 보려면 'devknife --help'를 실행하세요.")
+    except Exception as e:
+        result = error_handler.handle_exception(e)
+        click.echo(error_handler.format_error_for_cli(result), err=True)
+        sys.exit(1)
 
 
 # Encoding utilities

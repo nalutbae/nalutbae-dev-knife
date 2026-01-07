@@ -137,6 +137,7 @@ class ProcessingResult:
 
 
 @dataclass
+@dataclass
 class Config:
     """
     Configuration settings for the DevKnife system.
@@ -145,6 +146,7 @@ class Config:
     max_file_size: int = 100 * 1024 * 1024  # 100MB
     output_format: str = 'auto'
     tui_theme: str = 'default'
+    default_interface: str = 'tui'  # 'cli' or 'tui'
     
     def __post_init__(self):
         """Validate configuration after initialization."""
@@ -156,6 +158,8 @@ class Config:
             raise ValueError("Output format cannot be empty")
         if not self.tui_theme:
             raise ValueError("TUI theme cannot be empty")
+        if self.default_interface not in ['cli', 'tui']:
+            raise ValueError("Default interface must be 'cli' or 'tui'")
     
     def validate_file_size(self, size: int) -> bool:
         """

@@ -16,6 +16,8 @@ from textual import events
 
 from ..core.router import get_global_router, get_global_registry
 from ..core.models import InputData, InputSource, ProcessingResult
+from ..core.config_manager import get_global_config_manager, get_global_config
+from ..core.error_handling import get_tui_error_handler
 
 
 class UtilitySelectionScreen(Screen):
@@ -306,6 +308,7 @@ class UtilityFormScreen(Screen):
         file_path = file_input.value.strip()
         
         if file_path:
+            error_handler = get_tui_error_handler()
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
@@ -315,7 +318,8 @@ class UtilityFormScreen(Screen):
                 
                 self.notify(f"Loaded file: {file_path}")
             except Exception as e:
-                self.notify(f"Error loading file: {str(e)}", severity="error")
+                error_info = error_handler.handle_for_notification(e)
+                self.notify(error_info['message'], severity="error")
     
     def _show_help(self) -> None:
         """Show help for the current utility."""
@@ -380,6 +384,7 @@ class UtilityFormScreen(Screen):
             return
         
         options = self._collect_options()
+        error_handler = get_tui_error_handler()
         
         # Show processing indicator with progress
         self.notify("Processing...", timeout=2)
@@ -395,13 +400,14 @@ class UtilityFormScreen(Screen):
             # Show results
             self.app.push_screen(ResultScreen(self.command_name, result))
         except Exception as e:
-            self.notify(f"Execution error: {str(e)}", severity="error")
+            error_info = error_handler.handle_for_notification(e)
+            self.notify(error_info['message'], severity="error")
             # Still show result screen with error
             from ..core.models import ProcessingResult
             error_result = ProcessingResult(
                 success=False,
                 output=None,
-                error_message=f"Execution failed: {str(e)}"
+                error_message=error_info['message']
             )
             self.app.push_screen(ResultScreen(self.command_name, error_result))
     
@@ -580,6 +586,7 @@ class SaveFileScreen(Screen):
             self.notify("Please enter a file path", severity="error")
             return
         
+        error_handler = get_tui_error_handler()
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(self.content)
@@ -587,7 +594,8 @@ class SaveFileScreen(Screen):
             self.notify(f"Output saved to: {file_path}")
             self.app.pop_screen()
         except Exception as e:
-            self.notify(f"Error saving file: {str(e)}", severity="error")
+            error_info = error_handler.handle_for_notification(e)
+            self.notify(error_info['message'], severity="error")
     
     def action_back(self) -> None:
         """Go back without saving."""
