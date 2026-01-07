@@ -1,2 +1,2 @@
 [console_scripts]
-devknife = devknife.cli.main:main
+devknife = devknife.main:main

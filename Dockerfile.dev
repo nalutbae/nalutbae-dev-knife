@@ -1,0 +1,35 @@
+# Development Dockerfile for Python DevKnife Toolkit
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for better caching
+COPY pyproject.toml .
+COPY README.md .
+COPY LICENSE .
+
+# Install Python dependencies including development tools
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -e ".[dev,test]"
+
+# Copy the application code
+COPY . .
+
+# Create a non-root user
+RUN useradd --create-home --shell /bin/bash devknife && \
+    chown -R devknife:devknife /app
+USER devknife
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Default command for development
+CMD ["make", "help"]

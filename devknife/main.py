@@ -14,36 +14,38 @@ from .core.error_handling import get_cli_error_handler
 def detect_interface_preference(args: List[str]) -> str:
     """
     Detect which interface to use based on arguments and configuration.
-    
+
     Args:
         args: Command line arguments
-        
+
     Returns:
         'cli' or 'tui' indicating preferred interface
     """
     # Check for explicit TUI flag
-    if '--tui' in args or '-t' in args:
-        return 'tui'
-    
+    if "--tui" in args or "-t" in args:
+        return "tui"
+
     # Check for explicit CLI flag
-    if '--cli' in args or '-c' in args:
-        return 'cli'
-    
+    if "--cli" in args or "-c" in args:
+        return "cli"
+
     # If there are command arguments (beyond program name), prefer CLI
     if len(args) > 1:
         # Filter out interface flags
-        filtered_args = [arg for arg in args[1:] if arg not in ['--tui', '-t', '--cli', '-c']]
+        filtered_args = [
+            arg for arg in args[1:] if arg not in ["--tui", "-t", "--cli", "-c"]
+        ]
         if filtered_args:
-            return 'cli'
-    
+            return "cli"
+
     # Check configuration preference
     try:
         config = get_global_config()
-        interface_pref = getattr(config, 'default_interface', 'tui')
-        return interface_pref if interface_pref in ['cli', 'tui'] else 'tui'
+        interface_pref = getattr(config, "default_interface", "tui")
+        return interface_pref if interface_pref in ["cli", "tui"] else "tui"
     except Exception:
         # If config fails, default to TUI
-        return 'tui'
+        return "tui"
 
 
 def setup_environment():
@@ -60,25 +62,25 @@ def setup_environment():
 def run_cli_interface(args: List[str]):
     """
     Run the CLI interface.
-    
+
     Args:
         args: Command line arguments
     """
     try:
         from .cli.main import main
-        
+
         # Remove interface flags from args
-        filtered_args = [arg for arg in args if arg not in ['--cli', '-c']]
-        
+        filtered_args = [arg for arg in args if arg not in ["--cli", "-c"]]
+
         # Replace sys.argv temporarily
         original_argv = sys.argv
         sys.argv = filtered_args
-        
+
         try:
             main()
         finally:
             sys.argv = original_argv
-            
+
     except ImportError as e:
         error_handler = get_cli_error_handler()
         error_handler.handle_and_exit(
@@ -93,12 +95,15 @@ def run_tui_interface():
     """Run the TUI interface."""
     try:
         from .tui import run_tui
+
         run_tui()
     except ImportError as e:
         error_handler = get_cli_error_handler()
         error_handler.handle_and_exit(
-            ImportError(f"TUI 인터페이스를 로드할 수 없습니다: {e}\n"
-                       "textual 패키지가 설치되어 있는지 확인하세요.")
+            ImportError(
+                f"TUI 인터페이스를 로드할 수 없습니다: {e}\n"
+                "textual 패키지가 설치되어 있는지 확인하세요."
+            )
         )
     except KeyboardInterrupt:
         # Handle Ctrl+C gracefully in TUI
@@ -147,6 +152,7 @@ def show_version():
     """Show version information."""
     try:
         from . import __version__
+
         print(f"DevKnife v{__version__}")
     except ImportError:
         print("DevKnife v0.1.0")
@@ -155,24 +161,24 @@ def show_version():
 def main():
     """Main entry point for DevKnife."""
     args = sys.argv
-    
+
     # Handle special flags first
-    if '--help' in args or '-h' in args:
+    if "--help" in args or "-h" in args:
         show_help()
         return
-    
-    if '--version' in args or '-v' in args:
+
+    if "--version" in args or "-v" in args:
         show_version()
         return
-    
+
     # Set up environment
     setup_environment()
-    
+
     # Detect interface preference
     interface = detect_interface_preference(args)
-    
+
     # Run appropriate interface
-    if interface == 'cli':
+    if interface == "cli":
         run_cli_interface(args)
     else:
         run_tui_interface()

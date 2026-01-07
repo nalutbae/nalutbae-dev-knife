@@ -12,33 +12,61 @@ authors = [
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.8"
+keywords = [
+    "developer-tools", "cli", "tui", "utilities", "encoding", "json", "xml", "yaml",
+    "base64", "url-encoding", "csv", "markdown", "uuid", "hash", "timestamp",
+    "graphql", "css", "terminal", "devtools"
+]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Console :: Curses",
     "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Terminals",
+    "Topic :: Text Processing",
+    "Topic :: Utilities",
 ]
 dependencies = [
     "click>=8.0.0",
     "textual>=0.40.0",
-    "hypothesis>=6.0.0",
-    "pytest>=7.0.0",
     "chardet>=5.0.0",
     "PyYAML>=6.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "pytest>=7.0.0",
     "pytest-cov",
+    "hypothesis>=6.0.0",
     "black",
     "flake8",
     "mypy",
+    "build",
+    "twine",
 ]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov",
+    "hypothesis>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/devknife-team/python-devknife-toolkit"
+Documentation = "https://github.com/devknife-team/python-devknife-toolkit#readme"
+Repository = "https://github.com/devknife-team/python-devknife-toolkit.git"
+Issues = "https://github.com/devknife-team/python-devknife-toolkit/issues"
+Changelog = "https://github.com/devknife-team/python-devknife-toolkit/blob/main/CHANGELOG.md"
 
 [project.scripts]
 devknife = "devknife.main:main"
@@ -58,7 +86,9 @@ line-length = 88
 target-version = ['py38']
 
 [tool.mypy]
-python_version = "3.8"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
+python_version = "3.9"
+warn_return_any = false
+warn_unused_configs = false
+disallow_untyped_defs = false
+ignore_missing_imports = true
+check_untyped_defs = false

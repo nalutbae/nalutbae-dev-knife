@@ -18,9 +18,35 @@ Python으로 구현된 일상적인 개발자 유틸리티를 통합한 올인�
 
 ## 설치
 
+### PyPI에서 설치 (권장)
+
 ```bash
+# 최신 안정 버전 설치
 pip install python-devknife-toolkit
+
+# 설치 확인
+devknife --version
+devknife --help
 ```
+
+### 소스에서 설치 (개발용)
+
+```bash
+# 저장소 클론
+git clone https://github.com/devknife-team/python-devknife-toolkit.git
+cd python-devknife-toolkit
+
+# 개발 모드로 설치
+pip install -e ".[dev]"
+
+# 또는 설치 스크립트 사용
+python scripts/install.py --dev
+```
+
+### 요구사항
+
+- Python 3.8 이상
+- pip (Python 패키지 설치 도구)
 
 ## 사용법
 
@@ -458,19 +484,79 @@ $ devknife json
 
 ## 개발
 
-```bash
-# 개발 환경 설정
-pip install -e ".[dev]"
+### 개발 환경 설정
 
-# 테스트 실행
+```bash
+# 저장소 클론
+git clone https://github.com/devknife-team/python-devknife-toolkit.git
+cd python-devknife-toolkit
+
+# 가상 환경 생성 (권장)
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 개발 의존성과 함께 설치
+pip install -e ".[dev]"
+```
+
+### 테스트 실행
+
+```bash
+# 모든 테스트 실행
 pytest
 
+# 커버리지와 함께 테스트
+pytest --cov=devknife
+
+# 속성 기반 테스트만 실행
+pytest -k "property"
+```
+
+### 코드 품질 검사
+
+```bash
 # 코드 포맷팅
-black .
+black devknife tests
+
+# 린팅
+flake8 devknife tests
 
 # 타입 체크
 mypy devknife
 ```
+
+### 패키지 빌드
+
+```bash
+# 빌드 스크립트 사용 (권장)
+python scripts/build.py
+
+# 수동 빌드
+python -m build
+```
+
+### 배포
+
+```bash
+# Test PyPI에 업로드 (테스트용)
+python -m twine upload --repository testpypi dist/*
+
+# PyPI에 업로드 (프로덕션)
+python -m twine upload dist/*
+
+# 자동화된 릴리스 (버전 범프 포함)
+python scripts/release.py patch  # 패치 버전 증가
+python scripts/release.py minor  # 마이너 버전 증가
+python scripts/release.py major  # 메이저 버전 증가
+```
+
+### 기여하기
+
+기여에 관심이 있으시면 [CONTRIBUTING.md](CONTRIBUTING.md)를 참조하세요.
+
+### 상세한 설정 가이드
+
+개발 환경 설정에 대한 자세한 내용은 [SETUP.md](SETUP.md)를 참조하세요.
 
 ## 라이선스
 
