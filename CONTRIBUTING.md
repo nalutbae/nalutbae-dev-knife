@@ -1,6 +1,6 @@
-# Contributing to Python DevKnife Toolkit
+# Contributing to Nalutbae DevKnife Toolkit
 
-Thank you for your interest in contributing to Python DevKnife Toolkit! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to Nalutbae DevKnife Toolkit! This document provides guidelines and information for contributors.
 
 ## Development Setup
 
@@ -207,4 +207,4 @@ If you need help or have questions:
 
 ## License
 
-By contributing to Python DevKnife Toolkit, you agree that your contributions will be licensed under the MIT License.
+By contributing to Nalutbae DevKnife Toolkit, you agree that your contributions will be licensed under the MIT License.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build script for Python DevKnife Toolkit
+Build script for Nalutbae DevKnife Toolkit
 
 This script handles building the package for distribution.
 """
@@ -79,7 +79,7 @@ def check_package():
 
 def main():
     """Main build process."""
-    print("🚀 Starting Python DevKnife Toolkit build process")
+    print("🚀 Starting Nalutbae DevKnife Toolkit build process")
     print("=" * 50)
 
     # Check if build dependencies are installed

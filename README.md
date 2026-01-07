@@ -1,4 +1,4 @@
-# Python DevKnife Toolkit
+# Nalutbae DevKnife Toolkit
 
 Python으로 구현된 일상적인 개발자 유틸리티를 통합한 올인원 터미널 툴킷입니다.
 

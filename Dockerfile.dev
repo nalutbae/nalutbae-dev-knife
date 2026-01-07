@@ -1,4 +1,4 @@
-# Development Dockerfile for Python DevKnife Toolkit
+# Development Dockerfile for Nalutbae DevKnife Toolkit
 FROM python:3.11-slim
 
 # Set working directory

@@ -1,6 +1,6 @@
-# Setup Guide for Python DevKnife Toolkit
+# Setup Guide for Nalutbae DevKnife Toolkit
 
-This guide provides detailed instructions for setting up Python DevKnife Toolkit for development, testing, and distribution.
+This guide provides detailed instructions for setting up Nalutbae DevKnife Toolkit for development, testing, and distribution.
 
 ## Table of Contents
 

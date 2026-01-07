@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial release of Python DevKnife Toolkit
+- Initial release of Nalutbae DevKnife Toolkit
 - CLI interface with comprehensive command support
 - TUI interface with interactive menus
 - Base64 encoding/decoding utilities

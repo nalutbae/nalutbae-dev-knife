@@ -1,10 +1,10 @@
-# Makefile for Python DevKnife Toolkit
+# Makefile for Nalutbae DevKnife Toolkit
 
 .PHONY: help install install-dev test test-cov lint format type-check clean build upload-test upload docs
 
 # Default target
 help:
-	@echo "Python DevKnife Toolkit - Available commands:"
+	@echo "Nalutbae DevKnife Toolkit - Available commands:"
 	@echo ""
 	@echo "Setup:"
 	@echo "  install      Install package from PyPI"

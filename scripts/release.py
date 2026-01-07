@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Release script for Python DevKnife Toolkit
+Release script for Nalutbae DevKnife Toolkit
 
 This script handles the release process including version bumping,
 building, and uploading to PyPI.
@@ -172,7 +172,7 @@ def main():
         print("❌ Invalid bump type. Use: major, minor, or patch")
         sys.exit(1)
 
-    print("🚀 Starting Python DevKnife Toolkit release process")
+    print("🚀 Starting Nalutbae DevKnife Toolkit release process")
     print("=" * 60)
 
     # Check git status

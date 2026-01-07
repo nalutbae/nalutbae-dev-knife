@@ -150,7 +150,7 @@ def execute_command(command_name: str, input_data: InputData, options: Dict[str,
 @click.pass_context
 def main(ctx, tui):
     """
-    Python DevKnife Toolkit - 개발자를 위한 올인원 터미널 유틸리티 툴킷
+    Nalutbae DevKnife Toolkit - 개발자를 위한 올인원 터미널 유틸리티 툴킷
 
     사용법:
       devknife <command> [options] [input]

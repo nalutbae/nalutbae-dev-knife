@@ -1,6 +1,6 @@
 # Packaging and Distribution Guide
 
-This document provides comprehensive information about the packaging and distribution setup for Python DevKnife Toolkit.
+This document provides comprehensive information about the packaging and distribution setup for Nalutbae DevKnife Toolkit.
 
 ## Package Structure
 

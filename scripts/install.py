@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Installation script for Python DevKnife Toolkit
+Installation script for Nalutbae DevKnife Toolkit
 
 This script provides an easy way to install the toolkit with all dependencies.
 """
@@ -125,7 +125,7 @@ def show_usage_examples():
 
 def main():
     """Main installation process."""
-    print("🚀 Python DevKnife Toolkit Installation")
+    print("🚀 Nalutbae DevKnife Toolkit Installation")
     print("=" * 40)
 
     # Parse command line arguments
