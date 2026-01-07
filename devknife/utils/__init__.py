@@ -24,6 +24,12 @@ from .math_utility import (
     HashGenerator,
     TimestampConverter,
 )
+from .web_utility import (
+    GraphQLFormatter,
+    CSSFormatter,
+    CSSMinifier,
+    URLExtractor,
+)
 
 __all__ = [
     "ExampleUtility",
@@ -43,4 +49,8 @@ __all__ = [
     "NumberBaseConverter",
     "HashGenerator",
     "TimestampConverter",
+    "GraphQLFormatter",
+    "CSSFormatter",
+    "CSSMinifier",
+    "URLExtractor",
 ]
