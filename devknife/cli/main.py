@@ -118,22 +118,32 @@ def execute_command(command_name: str, input_data: InputData, options: Dict[str,
 
 @click.group(invoke_without_command=True)
 @click.version_option(version="0.1.0")
+@click.option('--tui', is_flag=True, help='TUI 인터페이스를 강제로 시작합니다')
 @click.pass_context
-def main(ctx):
+def main(ctx, tui):
     """
     Python DevKnife Toolkit - 개발자를 위한 올인원 터미널 유틸리티 툴킷
     
     사용법:
       devknife <command> [options] [input]
       devknife help <command>  - 특정 명령어 도움말
-      devknife                 - TUI 인터페이스 시작 (미구현)
+      devknife                 - TUI 인터페이스 시작
+      devknife --tui           - TUI 인터페이스를 강제로 시작
     """
     setup_utilities()
     
-    # If no command is provided, show help or start TUI
-    if ctx.invoked_subcommand is None:
-        click.echo("TUI 인터페이스는 아직 구현되지 않았습니다.")
-        click.echo("사용 가능한 명령어를 보려면 'devknife --help'를 실행하세요.")
+    # If no command is provided or --tui flag is used, start TUI
+    if ctx.invoked_subcommand is None or tui:
+        try:
+            from ..tui import run_tui
+            run_tui()
+        except ImportError as e:
+            click.echo(f"TUI 인터페이스를 시작할 수 없습니다: {str(e)}")
+            click.echo("textual 패키지가 설치되어 있는지 확인하세요.")
+            click.echo("사용 가능한 명령어를 보려면 'devknife --help'를 실행하세요.")
+        except Exception as e:
+            click.echo(f"TUI 시작 중 오류가 발생했습니다: {str(e)}")
+            click.echo("사용 가능한 명령어를 보려면 'devknife --help'를 실행하세요.")
 
 
 # Encoding utilities
