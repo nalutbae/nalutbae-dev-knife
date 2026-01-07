@@ -212,12 +212,12 @@ def main():
         print("1. Push changes to repository: git push && git push --tags")
         print("2. Create GitHub release with release notes")
         print(
-            f"3. Verify installation: pip install python-devknife-toolkit=={new_version}"
+            f"3. Verify installation: pip install nalutbae-dev-knife=={new_version}"
         )
     else:
         print("\nTest PyPI release completed. To test installation:")
         print(
-            f"pip install --index-url https://test.pypi.org/simple/ python-devknife-toolkit=={new_version}"
+            f"pip install --index-url https://test.pypi.org/simple/ nalutbae-dev-knife=={new_version}"
         )
 
 

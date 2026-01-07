@@ -13,8 +13,8 @@ Thank you for your interest in contributing to Python DevKnife Toolkit! This doc
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/devknife-team/python-devknife-toolkit.git
-cd python-devknife-toolkit
+git clone https://github.com/nalutebae/nalutbae-dev-knife.git
+cd nalutbae-dev-knife
 ```
 
 2. Create a virtual environment:
@@ -116,7 +116,7 @@ import pytest
 @given(st.text())
 def test_base64_round_trip_property(input_text):
     """
-    **Feature: python-devknife-toolkit, Property 1: Base64 인코딩 왕복**
+    **Feature: nalutbae-dev-knife, Property 1: Base64 인코딩 왕복**
     **Validates: Requirements 1.2**
     """
     from devknife.utils.encoding_utility import Base64EncoderDecoder

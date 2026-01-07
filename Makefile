@@ -29,7 +29,7 @@ help:
 
 # Installation
 install:
-	pip install python-devknife-toolkit
+	pip install nalutbae-dev-knife
 
 install-dev:
 	pip install -e ".[dev,test]"

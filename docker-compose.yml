@@ -3,7 +3,7 @@ version: '3.8'
 services:
   devknife:
     build: .
-    container_name: python-devknife-toolkit
+    container_name: nalutbae-dev-knife
     volumes:
       - .:/app
       - /app/.git  # Exclude .git directory
@@ -19,7 +19,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: python-devknife-toolkit-dev
+    container_name: nalutbae-dev-knife-dev
     volumes:
       - .:/app
       - /app/.git

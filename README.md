@@ -22,7 +22,7 @@ Python으로 구현된 일상적인 개발자 유틸리티를 통합한 올인�
 
 ```bash
 # 최신 안정 버전 설치
-pip install python-devknife-toolkit
+pip install nalutbae-dev-knife
 
 # 설치 확인
 devknife --version
@@ -33,8 +33,8 @@ devknife --help
 
 ```bash
 # 저장소 클론
-git clone https://github.com/devknife-team/python-devknife-toolkit.git
-cd python-devknife-toolkit
+git clone https://github.com/nalutebae/nalutbae-dev-knife.git
+cd nalutbae-dev-knife
 
 # 개발 모드로 설치
 pip install -e ".[dev]"
@@ -488,8 +488,8 @@ $ devknife json
 
 ```bash
 # 저장소 클론
-git clone https://github.com/devknife-team/python-devknife-toolkit.git
-cd python-devknife-toolkit
+git clone https://github.com/nalutebae/nalutbae-dev-knife.git
+cd nalutbae-dev-knife
 
 # 가상 환경 생성 (권장)
 python -m venv venv

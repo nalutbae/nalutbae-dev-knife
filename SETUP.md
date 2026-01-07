@@ -17,7 +17,7 @@ This guide provides detailed instructions for setting up Python DevKnife Toolkit
 
 ```bash
 # Install the latest stable version
-pip install python-devknife-toolkit
+pip install nalutbae-dev-knife
 
 # Verify installation
 devknife --version
@@ -28,8 +28,8 @@ devknife --help
 
 ```bash
 # Clone the repository
-git clone https://github.com/devknife-team/python-devknife-toolkit.git
-cd python-devknife-toolkit
+git clone https://github.com/nalutebae/nalutbae-dev-knife.git
+cd nalutbae-dev-knife
 
 # Run the installation script
 python scripts/install.py --dev
@@ -50,8 +50,8 @@ pip install -e ".[dev]"
 
 1. **Clone and Navigate**
    ```bash
-   git clone https://github.com/devknife-team/python-devknife-toolkit.git
-   cd python-devknife-toolkit
+   git clone https://github.com/nalutebae/nalutbae-dev-knife.git
+   cd nalutbae-dev-knife
    ```
 
 2. **Create Virtual Environment** (Recommended)
@@ -113,7 +113,7 @@ python -m build
 
 This will create distribution files in the `dist/` directory:
 - `python_devknife_toolkit-X.Y.Z-py3-none-any.whl` (wheel format)
-- `python-devknife-toolkit-X.Y.Z.tar.gz` (source distribution)
+- `nalutbae-dev-knife-X.Y.Z.tar.gz` (source distribution)
 
 ### Testing the Built Package
 
@@ -135,7 +135,7 @@ devknife base64 'test'
 python -m twine upload --repository testpypi dist/*
 
 # Install from Test PyPI
-pip install --index-url https://test.pypi.org/simple/ python-devknife-toolkit
+pip install --index-url https://test.pypi.org/simple/ nalutbae-dev-knife
 ```
 
 #### Production PyPI
@@ -145,7 +145,7 @@ pip install --index-url https://test.pypi.org/simple/ python-devknife-toolkit
 python -m twine upload dist/*
 
 # Install from PyPI
-pip install python-devknife-toolkit
+pip install nalutbae-dev-knife
 ```
 
 ## Testing
@@ -200,7 +200,7 @@ from hypothesis import given, strategies as st
 @given(st.text())
 def test_base64_round_trip_property(input_text):
     """
-    **Feature: python-devknife-toolkit, Property 1: Base64 인코딩 왕복**
+    **Feature: nalutbae-dev-knife, Property 1: Base64 인코딩 왕복**
     **Validates: Requirements 1.2**
     """
     from devknife.utils.encoding_utility import Base64EncoderDecoder
@@ -274,7 +274,7 @@ python scripts/release.py patch --test-pypi
 #### Import Errors
 ```bash
 # If you get import errors after installation
-pip install --force-reinstall python-devknife-toolkit
+pip install --force-reinstall nalutbae-dev-knife
 
 # For development mode
 pip install -e . --force-reinstall
@@ -321,7 +321,7 @@ python scripts/build.py
 python --version
 
 # If using wrong version, use specific version
-python3.8 -m pip install python-devknife-toolkit
+python3.8 -m pip install nalutbae-dev-knife
 ```
 
 #### Virtual Environment Issues

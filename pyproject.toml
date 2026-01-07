@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "python-devknife-toolkit"
+name = "nalutbae-dev-knife"
 version = "0.1.0"
 description = "Python으로 구현된 일상적인 개발자 유틸리티를 통합한 올인원 터미널 툴킷"
 authors = [
@@ -62,11 +62,11 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/devknife-team/python-devknife-toolkit"
-Documentation = "https://github.com/devknife-team/python-devknife-toolkit#readme"
-Repository = "https://github.com/devknife-team/python-devknife-toolkit.git"
-Issues = "https://github.com/devknife-team/python-devknife-toolkit/issues"
-Changelog = "https://github.com/devknife-team/python-devknife-toolkit/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/nalutebae/nalutbae-dev-knife"
+Documentation = "https://github.com/nalutebae/nalutbae-dev-knife#readme"
+Repository = "https://github.com/nalutebae/nalutbae-dev-knife.git"
+Issues = "https://github.com/nalutebae/nalutbae-dev-knife/issues"
+Changelog = "https://github.com/nalutebae/nalutbae-dev-knife/blob/main/CHANGELOG.md"
 
 [project.scripts]
 devknife = "devknife.main:main"

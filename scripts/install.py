@@ -68,7 +68,7 @@ def install_package(dev_mode=False, test_dependencies=False):
             description = "Installing from local source"
         else:
             # PyPI installation
-            cmd = "pip install python-devknife-toolkit"
+            cmd = "pip install nalutbae-dev-knife"
             description = "Installing from PyPI"
 
     result = run_command(cmd, description)
@@ -120,7 +120,7 @@ def show_usage_examples():
     print("   devknife list-commands")
 
     print("\n📖 For more examples and documentation:")
-    print("   https://github.com/devknife-team/python-devknife-toolkit#readme")
+    print("   https://github.com/nalutebae/nalutbae-dev-knife#readme")
 
 
 def main():

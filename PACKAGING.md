@@ -7,7 +7,7 @@ This document provides comprehensive information about the packaging and distrib
 The project follows Python packaging best practices with the following structure:
 
 ```
-python-devknife-toolkit/
+nalutbae-dev-knife/
 ├── devknife/                    # Main package
 │   ├── __init__.py
 │   ├── main.py                  # Entry point
@@ -48,7 +48,7 @@ Key sections:
 
 ```toml
 [project]
-name = "python-devknife-toolkit"
+name = "nalutbae-dev-knife"
 version = "0.1.0"
 description = "Python으로 구현된 일상적인 개발자 유틸리티를 통합한 올인원 터미널 툴킷"
 
@@ -56,9 +56,9 @@ description = "Python으로 구현된 일상적인 개발자 유틸리티를 통
 devknife = "devknife.main:main"
 
 [project.urls]
-Homepage = "https://github.com/devknife-team/python-devknife-toolkit"
-Repository = "https://github.com/devknife-team/python-devknife-toolkit.git"
-Issues = "https://github.com/devknife-team/python-devknife-toolkit/issues"
+Homepage = "https://github.com/nalutebae/nalutbae-dev-knife"
+Repository = "https://github.com/nalutebae/nalutbae-dev-knife.git"
+Issues = "https://github.com/nalutebae/nalutbae-dev-knife/issues"
 ```
 
 ### MANIFEST.in
@@ -177,7 +177,7 @@ For testing releases:
 python -m twine upload --repository testpypi dist/*
 
 # Install from Test PyPI
-pip install --index-url https://test.pypi.org/simple/ python-devknife-toolkit
+pip install --index-url https://test.pypi.org/simple/ nalutbae-dev-knife
 ```
 
 ### Production PyPI
@@ -189,7 +189,7 @@ For production releases:
 python -m twine upload dist/*
 
 # Install from PyPI
-pip install python-devknife-toolkit
+pip install nalutbae-dev-knife
 ```
 
 ## Installation Methods
@@ -198,21 +198,21 @@ pip install python-devknife-toolkit
 
 ```bash
 # Latest stable version
-pip install python-devknife-toolkit
+pip install nalutbae-dev-knife
 
 # Specific version
-pip install python-devknife-toolkit==0.1.0
+pip install nalutbae-dev-knife==0.1.0
 
 # With optional dependencies
-pip install python-devknife-toolkit[dev]
+pip install nalutbae-dev-knife[dev]
 ```
 
 ### From Source (For Development)
 
 ```bash
 # Clone repository
-git clone https://github.com/devknife-team/python-devknife-toolkit.git
-cd python-devknife-toolkit
+git clone https://github.com/nalutebae/nalutbae-dev-knife.git
+cd nalutbae-dev-knife
 
 # Install in development mode
 pip install -e ".[dev]"
